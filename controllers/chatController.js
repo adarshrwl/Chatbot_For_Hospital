@@ -1,19 +1,21 @@
-exports.getChatResponse = (req, res) => {
-    const userQuery = req.body.query;
-  
-    // Example: Dummy logic for now
-    let botResponse = "Sorry, I couldn't understand your query.";
-  
-    // Simulate a response based on the query
-    if (userQuery.toLowerCase().includes("doctor")) {
-      botResponse = "You can find doctors in the Main Building, Floor 1.";
-    } else if (userQuery.toLowerCase().includes("pharmacy")) {
-      botResponse = "The pharmacy is located near the main entrance.";
-    }
-  
+const axios = require("axios");
+
+exports.getChatResponse = async (req, res) => {
+  const userQuery = req.body.query;
+
+  try {
+    // Send query to Python Flask service
+    const pythonResponse = await axios.post("http://localhost:8000/process-query", {
+      query: userQuery
+    });
+
+    // Return Python service's response to the client
     res.json({
       userQuery,
-      botResponse,
+      botResponse: pythonResponse.data.response
     });
-  };
-  
+  } catch (error) {
+    console.error("Error communicating with Python service:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

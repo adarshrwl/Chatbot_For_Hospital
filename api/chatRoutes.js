@@ -3,7 +3,7 @@ const { getChatResponse } = require("../controllers/chatController");
 
 const router = express.Router();
 
-// Route for chatbot queries (stateless)
+// POST route to handle chatbot queries
 router.post("/", getChatResponse);
 
 module.exports = router;
