@@ -19,6 +19,7 @@ const Header = () => {
         <Link to="/">Dashboard</Link>
         <Link to="/doctors">Doctors</Link>
         <Link to="/departments">Departments</Link>
+        <Link to="/appointments">Appointments</Link>
 
         {/* Conditional rendering based on user state */}
         {user ? (

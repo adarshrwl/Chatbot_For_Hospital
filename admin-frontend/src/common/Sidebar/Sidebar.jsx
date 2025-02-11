@@ -16,7 +16,10 @@ const Sidebar = () => (
           <NavLink to="/doctors">Doctors</NavLink>
         </li>
         <li>
-          <NavLink to="/departments">departments</NavLink>
+          <NavLink to="/departments">Departments</NavLink>
+        </li>
+        <li>
+          <NavLink to="/appointments">Appointments</NavLink>
         </li>
         {/* Additional links can be added here */}
       </ul>
