@@ -1,21 +1,41 @@
 const Doctor = require("../models/Doctor");
-
-// Create a new doctor
+const Department = require("../models/Department");
+const mongoose = require("mongoose");
 exports.createDoctor = async (req, res) => {
+  console.log("Incoming request body:", req.body);
   try {
-    const newDoctor = await Doctor.create(req.body);
-    res.status(201).json(newDoctor);
+    const { name, specialization, departmentId } = req.body;
+
+    // Validate if departmentId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(departmentId)) {
+      return res.status(400).json({ error: "Invalid departmentId" });
+    }
+
+    // Find the department by ID
+    const department = await Department.findById(departmentId);
+    if (!department) {
+      return res.status(404).json({ error: "Department not found" });
+    }
+
+    // Create a new doctor
+    const newDoctor = await Doctor.create({
+      name,
+      specialization,
+      department: departmentId,
+    });
+
+    res.status(201).json({ success: true, doctor: newDoctor });
   } catch (error) {
-    res.status(500).json({ message: "Error creating doctor", error });
+    console.error("Error creating doctor:", error);
+    res.status(500).json({ error: "Failed to create doctor" });
   }
 };
-
-// Retrieve all doctors (with department populated)
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find().populate("department");
     res.status(200).json(doctors);
   } catch (error) {
+    console.error("Error retrieving doctors:", error); // Debug log
     res.status(500).json({ message: "Error retrieving doctors", error });
   }
 };

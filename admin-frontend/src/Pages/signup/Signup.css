@@ -1,0 +1,25 @@
+/* src/pages/signup/Signup.css */
+
+/* Page background with a subtle gradient */
+
+
+/* Center the card */
+.signup-card {
+  width: 400px;
+  border-radius: 15px;
+}
+
+/* Button styling */
+.btn-signup-custom {
+  background-color: #5563de;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-signup-custom:hover {
+  background-color: #4452c0;
+}

@@ -1,0 +1,27 @@
+/* src/common/sidebar/Sidebar.css */
+.sidebar {
+  width: 200px;
+  background-color: #eee;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar nav ul li {
+  margin-bottom: 10px;
+}
+
+.sidebar nav ul li a {
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+}
+
+.sidebar nav ul li a.active {
+  font-weight: bold;
+  color: #007bff;
+}

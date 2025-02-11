@@ -15,6 +15,7 @@ exports.registerUser = async (req, res) => {
     });
     res.status(201).json(newUser);
   } catch (error) {
+    console.log("Error in registerUser:", error);
     res.status(500).json({ message: "Error registering user", error });
   }
 };

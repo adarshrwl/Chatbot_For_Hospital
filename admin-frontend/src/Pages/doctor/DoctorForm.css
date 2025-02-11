@@ -1,0 +1,37 @@
+/* src/pages/doctors/DoctorForm.css */
+.doctor-form-card {
+  max-width: 500px;
+  margin: 0 auto;
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.doctor-form-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.doctor-form-input {
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  box-shadow: none;
+}
+
+.doctor-form-input:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-signup-custom {
+  background-color: #007bff;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-signup-custom:hover {
+  background-color: #0056b3;
+}
