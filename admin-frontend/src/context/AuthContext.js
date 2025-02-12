@@ -23,9 +23,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("auth-token");
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      console.log("Parsed user from localStorage:", parsedUser); // Debugging log
-      setUser(parsedUser);
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log("Parsed user from localStorage:", parsedUser); // Debugging log
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Failed to parse auth-token from localStorage:", error);
+        // Optionally clear the corrupted token to prevent the error
+        localStorage.removeItem("auth-token");
+      }
     }
   }, []);
 

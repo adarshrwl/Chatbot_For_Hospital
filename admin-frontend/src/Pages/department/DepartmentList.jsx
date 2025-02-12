@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axiosInstance"; // axiosInstance already handles the Authorization header
+
 import { Table, Button } from "react-bootstrap";
 
 const DepartmentList = () => {
@@ -12,8 +13,9 @@ const DepartmentList = () => {
 
   const fetchDepartments = () => {
     setLoading(true);
+
     axios
-      .get(`${process.env.REACT_APP_API_URL}/departments`)
+      .get("/departments") // Token is added by axiosInstance
       .then((response) => {
         setDepartments(response.data);
         setLoading(false);
@@ -27,7 +29,7 @@ const DepartmentList = () => {
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this department?")) {
       axios
-        .delete(`${process.env.REACT_APP_API_URL}/departments/${id}`)
+        .delete(`/departments/${id}`) // Token is added by axiosInstance
         .then(() => {
           setDepartments(departments.filter((dept) => dept._id !== id));
         })

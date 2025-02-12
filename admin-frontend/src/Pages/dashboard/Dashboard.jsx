@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card } from "react-bootstrap";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+
 import "./Dashboard.css"; // Custom CSS for styling improvements
 
 const Dashboard = () => {

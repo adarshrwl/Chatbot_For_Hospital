@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+
 import { Form, Button, Card, Toast, ToastContainer } from "react-bootstrap";
 import "./Login.css";
 import { AuthContext } from "../../context/AuthContext"; // Correct import
@@ -16,13 +17,24 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
+
+    // Make the API call to login
     axios
-      .post(process.env.REACT_APP_API_URL + "/users/login", {
+      .post("/users/login", {
         username,
         password,
       })
       .then((response) => {
         const { token, user } = response.data;
+
+        // Debug log for token
+        console.log("Received Token:", token);
+
+        // Save token to localStorage
+        localStorage.setItem(
+          "auth-token",
+          JSON.stringify({ username: user.username, token })
+        );
 
         // Update the global auth context
         login({ username: user.username, token });
@@ -32,15 +44,25 @@ const Login = () => {
         setToastMessage("Login successful!");
         setShowToast(true);
 
-        // Optionally, redirect the user (e.g., to the dashboard)
+        // Redirect to dashboard or homepage
         setTimeout(() => {
-          window.location.href = "/"; // Or use useNavigate for React Router
+          window.location.href = "/"; // Or useNavigate for React Router
         }, 2000);
       })
       .catch((error) => {
         console.error("Login error:", error);
         setToastVariant("danger");
-        setToastMessage("Login failed. Please check your credentials.");
+
+        // Show a specific error message if available
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          setToastMessage(error.response.data.message);
+        } else {
+          setToastMessage("Login failed. Please check your credentials.");
+        }
         setShowToast(true);
       });
   };

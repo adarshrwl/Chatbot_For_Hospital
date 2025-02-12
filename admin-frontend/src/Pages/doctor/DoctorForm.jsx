@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../utils/axiosInstance";
+
 import { Form, Button, Card, Toast, ToastContainer } from "react-bootstrap";
 import "./DoctorForm.css";
 
