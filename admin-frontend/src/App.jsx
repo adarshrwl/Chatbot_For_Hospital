@@ -16,6 +16,7 @@ import Signup from "./Pages/signup/Signup";
 import Departments from "./Pages/department/department";
 import "./App.css";
 import Appointment from "./Pages/appointment/appointment";
+import Chat from "./Pages/chat/ChatPage";
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
               <Route path="*" element={<Navigate to="/" />} />
               <Route path="/departments" element={<Departments />} />
               <Route path="/appointments" element={<Appointment />} />
+              <Route path="/chat" element={<Chat />} />
             </Routes>
           </div>
         </div>

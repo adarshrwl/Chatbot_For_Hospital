@@ -6,8 +6,6 @@ const connectdb = require("./config/db");
 
 // Middleware for parsing JSON and enabling CORS
 app.use(express.json());
-
-// Allow requests from any origin
 app.use(
   cors({
     origin: "http://localhost:3000", // React app's URL
@@ -16,20 +14,24 @@ app.use(
   })
 );
 
+// Connect to the database
+connectdb();
+
 // Import routes
 const doctorRoutes = require("./routes/doctorRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const userRoutes = require("./routes/userRoutes");
+const chatRoutes = require("./routes/chatRoutes"); // New chat route
 
 // Mount the routes on specific paths
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/users", userRoutes);
-connectdb();
+app.use("/api/chat", chatRoutes); // Chat endpoint
 
-// Optional Error handling middleware
+// Optional Error handling middleware (uncomment if needed)
 // app.use((err, req, res, next) => {
 //   res.status(500).json({ error: err.message });
 // });
