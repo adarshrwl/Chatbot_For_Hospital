@@ -23,6 +23,7 @@ const departmentRoutes = require("./routes/departmentRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes"); // New chat route
+const chatLogRoutes = require("./routes/chatLogRoutes"); 
 
 // Mount the routes on specific paths
 app.use("/api/doctors", doctorRoutes);
@@ -30,7 +31,7 @@ app.use("/api/departments", departmentRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes); // Chat endpoint
-
+app.use("/api/chat/logs", chatLogRoutes)
 // Optional Error handling middleware (uncomment if needed)
 // app.use((err, req, res, next) => {
 //   res.status(500).json({ error: err.message });

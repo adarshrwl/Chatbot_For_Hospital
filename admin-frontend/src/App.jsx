@@ -17,7 +17,7 @@ import Departments from "./Pages/department/department";
 import "./App.css";
 import Appointment from "./Pages/appointment/appointment";
 import Chat from "./Pages/chat/ChatPage";
-
+import ChatLogPage from "./Pages/chatlog/ChatLogPage";
 const App = () => {
   return (
     <Router>
@@ -34,6 +34,7 @@ const App = () => {
               <Route path="*" element={<Navigate to="/" />} />
               <Route path="/departments" element={<Departments />} />
               <Route path="/appointments" element={<Appointment />} />
+              <Route path="/chat-logs" element={<ChatLogPage />} />
               <Route path="/chat" element={<Chat />} />
             </Routes>
           </div>

@@ -1,5 +1,4 @@
-// src/pages/chat/ChatPage.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   Container,
@@ -21,10 +20,60 @@ const ChatPage = () => {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [autoRead, setAutoRead] = useState(true); // Auto-read is enabled by default
+  const recognitionRef = useRef(null);
 
+  // Initialize Speech Recognition on mount
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+      };
+
+      recognitionRef.current = recognition;
+    } else {
+      console.warn("Browser does not support Speech Recognition API.");
+    }
+  }, []);
+
+  // Start voice recognition
+  const startVoiceInput = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+    }
+  };
+
+  // Use text-to-speech to speak out the chatbot's reply if autoRead is enabled
+  const speakText = (text) => {
+    if (autoRead && "speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Toggle auto-read feature on or off
+  const toggleAutoRead = () => {
+    setAutoRead((prev) => !prev);
+  };
+
+  // Send the chat message to the backend and update conversation
   const sendMessage = async () => {
     if (!input.trim()) return;
 
+    // Append user's message to conversation
     const newMessages = [...messages, { sender: "user", text: input }];
     setMessages(newMessages);
     const userMessage = input;
@@ -39,6 +88,7 @@ const ChatPage = () => {
       );
       const botReply = response.data.reply;
       setMessages([...newMessages, { sender: "bot", text: botReply }]);
+      speakText(botReply);
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages([
@@ -62,7 +112,19 @@ const ChatPage = () => {
       <Row className="justify-content-center align-items-center h-100">
         <Col md={8} lg={6}>
           <Card className="chat-card shadow-sm">
-            <Card.Header as="h5">Hospital Chatbot</Card.Header>
+            <Card.Header
+              as="h5"
+              className="d-flex justify-content-between align-items-center"
+            >
+              <span>Hospital Chatbot</span>
+              <Button
+                variant={autoRead ? "success" : "secondary"}
+                size="sm"
+                onClick={toggleAutoRead}
+              >
+                {autoRead ? "Auto Read: ON" : "Auto Read: OFF"}
+              </Button>
+            </Card.Header>
             <Card.Body>
               <ListGroup variant="flush" className="chat-messages">
                 {messages.map((msg, index) => (
@@ -81,20 +143,28 @@ const ChatPage = () => {
                 <Form.Group controlId="chatInput">
                   <Form.Control
                     type="text"
-                    placeholder="Type your message..."
+                    placeholder="Type your message or click the mic to speak..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     disabled={loading}
                   />
                 </Form.Group>
-                <Button
-                  variant="primary"
-                  type="submit"
-                  className="mt-2 w-100"
-                  disabled={loading || !input.trim()}
-                >
-                  {loading ? "Sending..." : "Send"}
-                </Button>
+                <div className="d-flex justify-content-between mt-2">
+                  <Button
+                    variant="secondary"
+                    onClick={startVoiceInput}
+                    disabled={loading}
+                  >
+                    🎤 Voice Input
+                  </Button>
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={loading || !input.trim()}
+                  >
+                    {loading ? "Sending..." : "Send"}
+                  </Button>
+                </div>
               </Form>
             </Card.Body>
           </Card>
