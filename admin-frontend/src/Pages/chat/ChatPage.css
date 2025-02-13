@@ -36,3 +36,8 @@
   margin-bottom: 8px;
   text-align: right;
 }
+
+/* Optional: spacing for the Resend button if needed */
+.ml-2 {
+  margin-left: 0.5rem;
+}

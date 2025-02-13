@@ -1,3 +1,4 @@
+// src/pages/chat/ChatPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
@@ -20,7 +21,8 @@ const ChatPage = () => {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [autoRead, setAutoRead] = useState(true); // Auto-read is enabled by default
+  const [autoRead, setAutoRead] = useState(true); // Auto-read enabled by default
+  const [lastUserQuery, setLastUserQuery] = useState(""); // To store the last query sent
   const recognitionRef = useRef(null);
 
   // Initialize Speech Recognition on mount
@@ -64,20 +66,23 @@ const ChatPage = () => {
     }
   };
 
-  // Toggle auto-read feature on or off
+  // Toggle auto-read on or off
   const toggleAutoRead = () => {
     setAutoRead((prev) => !prev);
   };
 
-  // Send the chat message to the backend and update conversation
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  // Send the chat message to the backend; if a query is provided, use it instead of current input.
+  const sendMessage = async (query) => {
+    const userMessage = query || input;
+    if (!userMessage.trim()) return;
 
     // Append user's message to conversation
-    const newMessages = [...messages, { sender: "user", text: input }];
+    const newMessages = [...messages, { sender: "user", text: userMessage }];
     setMessages(newMessages);
-    const userMessage = input;
-    setInput("");
+    // Save the last query so we can resend it later
+    setLastUserQuery(userMessage);
+    // Clear input if not resending
+    if (!query) setInput("");
     setLoading(true);
 
     try {
@@ -87,24 +92,37 @@ const ChatPage = () => {
         { headers: { "Content-Type": "application/json" } }
       );
       const botReply = response.data.reply;
-      setMessages([...newMessages, { sender: "bot", text: botReply }]);
+      const updatedMessages = [
+        ...newMessages,
+        { sender: "bot", text: botReply },
+      ];
+      setMessages(updatedMessages);
       speakText(botReply);
     } catch (error) {
       console.error("Error sending message:", error);
-      setMessages([
+      const updatedMessages = [
         ...newMessages,
         {
           sender: "bot",
           text: "Sorry, there was an error processing your query.",
         },
-      ]);
+      ];
+      setMessages(updatedMessages);
     }
     setLoading(false);
   };
 
+  // Handle form submit for sending a new message
   const handleSubmit = (e) => {
     e.preventDefault();
     sendMessage();
+  };
+
+  // Resend the last user query
+  const handleResend = () => {
+    if (lastUserQuery) {
+      sendMessage(lastUserQuery);
+    }
   };
 
   return (
@@ -112,18 +130,26 @@ const ChatPage = () => {
       <Row className="justify-content-center align-items-center h-100">
         <Col md={8} lg={6}>
           <Card className="chat-card shadow-sm">
-            <Card.Header
-              as="h5"
-              className="d-flex justify-content-between align-items-center"
-            >
+            <Card.Header className="d-flex justify-content-between align-items-center">
               <span>Hospital Chatbot</span>
-              <Button
-                variant={autoRead ? "success" : "secondary"}
-                size="sm"
-                onClick={toggleAutoRead}
-              >
-                {autoRead ? "Auto Read: ON" : "Auto Read: OFF"}
-              </Button>
+              <div>
+                <Button
+                  variant={autoRead ? "success" : "secondary"}
+                  size="sm"
+                  onClick={toggleAutoRead}
+                >
+                  {autoRead ? "Auto Read: ON" : "Auto Read: OFF"}
+                </Button>
+                <Button
+                  variant="warning"
+                  size="sm"
+                  onClick={handleResend}
+                  disabled={!lastUserQuery || loading}
+                  className="ml-2"
+                >
+                  Resend
+                </Button>
+              </div>
             </Card.Header>
             <Card.Body>
               <ListGroup variant="flush" className="chat-messages">
@@ -135,7 +161,11 @@ const ChatPage = () => {
                     }
                   >
                     <strong>{msg.sender === "bot" ? "Bot" : "You"}: </strong>
-                    {msg.text}
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: msg.text.replace(/\n/g, "<br/>"),
+                      }}
+                    ></span>
                   </ListGroup.Item>
                 ))}
               </ListGroup>
