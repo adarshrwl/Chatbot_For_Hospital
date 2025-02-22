@@ -1,25 +1,26 @@
-/* src/pages/chat/ChatPage.css */
-
 .chat-page {
-  min-height: 100vh;
-  background-color: #f4f4f4;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff; /* Set to white or desired background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chat-card {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0; /* Remove border-radius for full coverage */
   display: flex;
   flex-direction: column;
 }
 
-.h-100 {
-  height: 100vh;
-}
-
-.chat-card {
-  border-radius: 10px;
-  background-color: #ffffff;
-}
-
 .chat-messages {
-  max-height: 60vh;
+  flex-grow: 1;
   overflow-y: auto;
-  margin-bottom: 1rem;
+  padding: 10px;
 }
 
 .bot-message {
@@ -37,7 +38,7 @@
   text-align: right;
 }
 
-/* Optional: spacing for the Resend button if needed */
+/* Optional: spacing for the Resend button */
 .ml-2 {
   margin-left: 0.5rem;
 }

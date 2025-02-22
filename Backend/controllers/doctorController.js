@@ -2,26 +2,34 @@ const Doctor = require("../models/Doctor");
 const Department = require("../models/Department");
 const mongoose = require("mongoose");
 exports.createDoctor = async (req, res) => {
-  console.log("Incoming request body:", req.body);
   try {
-    const { name, specialization, departmentId } = req.body;
+    const {
+      name,
+      specialization,
+      departmentId,
+      timings,
+      consultationFee,
+      contact,
+      experience,
+    } = req.body;
 
-    // Validate if departmentId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(departmentId)) {
       return res.status(400).json({ error: "Invalid departmentId" });
     }
 
-    // Find the department by ID
     const department = await Department.findById(departmentId);
     if (!department) {
       return res.status(404).json({ error: "Department not found" });
     }
 
-    // Create a new doctor
     const newDoctor = await Doctor.create({
       name,
       specialization,
       department: departmentId,
+      timings,
+      consultationFee,
+      contact,
+      experience,
     });
 
     res.status(201).json({ success: true, doctor: newDoctor });
@@ -30,6 +38,7 @@ exports.createDoctor = async (req, res) => {
     res.status(500).json({ error: "Failed to create doctor" });
   }
 };
+
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find().populate("department");

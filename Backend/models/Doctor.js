@@ -6,10 +6,14 @@ const DoctorSchema = new Schema(
     name: { type: String, required: true },
     specialization: { type: String, required: true },
     department: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Department',
+      type: Schema.Types.ObjectId,
+      ref: "Department",
       required: true,
-  },
+    },
+    timings: { type: String, required: true },
+    consultationFee: { type: Number, required: true },
+    contact: { type: String, required: true },
+    experience: { type: Number, required: true },
   },
   { timestamps: true }
 );

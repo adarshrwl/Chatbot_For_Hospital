@@ -1,18 +1,9 @@
-// src/pages/chat/ChatPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-  ListGroup,
-} from "react-bootstrap";
+import { Container, Card, Form, Button, ListGroup } from "react-bootstrap";
 import "./ChatPage.css";
 
-const ChatPage = () => {
+export default function ChatPage() {
   const [messages, setMessages] = useState([
     {
       sender: "bot",
@@ -21,11 +12,10 @@ const ChatPage = () => {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [autoRead, setAutoRead] = useState(true); // Auto-read enabled by default
-  const [lastUserQuery, setLastUserQuery] = useState(""); // To store the last query sent
+  const [autoRead, setAutoRead] = useState(true);
+  const [lastUserQuery, setLastUserQuery] = useState("");
   const recognitionRef = useRef(null);
 
-  // Initialize Speech Recognition on mount
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -50,14 +40,12 @@ const ChatPage = () => {
     }
   }, []);
 
-  // Start voice recognition
   const startVoiceInput = () => {
     if (recognitionRef.current) {
       recognitionRef.current.start();
     }
   };
 
-  // Use text-to-speech to speak out the chatbot's reply if autoRead is enabled
   const speakText = (text) => {
     if (autoRead && "speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(text);
@@ -66,22 +54,17 @@ const ChatPage = () => {
     }
   };
 
-  // Toggle auto-read on or off
   const toggleAutoRead = () => {
     setAutoRead((prev) => !prev);
   };
 
-  // Send the chat message to the backend; if a query is provided, use it instead of current input.
   const sendMessage = async (query) => {
     const userMessage = query || input;
     if (!userMessage.trim()) return;
 
-    // Append user's message to conversation
     const newMessages = [...messages, { sender: "user", text: userMessage }];
     setMessages(newMessages);
-    // Save the last query so we can resend it later
     setLastUserQuery(userMessage);
-    // Clear input if not resending
     if (!query) setInput("");
     setLoading(true);
 
@@ -112,13 +95,11 @@ const ChatPage = () => {
     setLoading(false);
   };
 
-  // Handle form submit for sending a new message
   const handleSubmit = (e) => {
     e.preventDefault();
     sendMessage();
   };
 
-  // Resend the last user query
   const handleResend = () => {
     if (lastUserQuery) {
       sendMessage(lastUserQuery);
@@ -127,81 +108,75 @@ const ChatPage = () => {
 
   return (
     <Container fluid className="chat-page">
-      <Row className="justify-content-center align-items-center h-100">
-        <Col md={8} lg={6}>
-          <Card className="chat-card shadow-sm">
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <span>Hospital Chatbot</span>
-              <div>
-                <Button
-                  variant={autoRead ? "success" : "secondary"}
-                  size="sm"
-                  onClick={toggleAutoRead}
-                >
-                  {autoRead ? "Auto Read: ON" : "Auto Read: OFF"}
-                </Button>
-                <Button
-                  variant="warning"
-                  size="sm"
-                  onClick={handleResend}
-                  disabled={!lastUserQuery || loading}
-                  className="ml-2"
-                >
-                  Resend
-                </Button>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              <ListGroup variant="flush" className="chat-messages">
-                {messages.map((msg, index) => (
-                  <ListGroup.Item
-                    key={index}
-                    className={
-                      msg.sender === "bot" ? "bot-message" : "user-message"
-                    }
-                  >
-                    <strong>{msg.sender === "bot" ? "Bot" : "You"}: </strong>
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html: msg.text.replace(/\n/g, "<br/>"),
-                      }}
-                    ></span>
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-              <Form onSubmit={handleSubmit} className="mt-3">
-                <Form.Group controlId="chatInput">
-                  <Form.Control
-                    type="text"
-                    placeholder="Type your message or click the mic to speak..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    disabled={loading}
-                  />
-                </Form.Group>
-                <div className="d-flex justify-content-between mt-2">
-                  <Button
-                    variant="secondary"
-                    onClick={startVoiceInput}
-                    disabled={loading}
-                  >
-                    🎤 Voice Input
-                  </Button>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    disabled={loading || !input.trim()}
-                  >
-                    {loading ? "Sending..." : "Send"}
-                  </Button>
-                </div>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <Card className="chat-card">
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <span>Hospital Chatbot</span>
+          <div>
+            <Button
+              variant={autoRead ? "success" : "secondary"}
+              size="sm"
+              onClick={toggleAutoRead}
+            >
+              {autoRead ? "Auto Read: ON" : "Auto Read: OFF"}
+            </Button>
+            <Button
+              variant="warning"
+              size="sm"
+              onClick={handleResend}
+              disabled={!lastUserQuery || loading}
+              className="ml-2"
+            >
+              Resend
+            </Button>
+          </div>
+        </Card.Header>
+        <Card.Body className="d-flex flex-column">
+          <ListGroup variant="flush" className="chat-messages">
+            {messages.map((msg, index) => (
+              <ListGroup.Item
+                key={index}
+                className={
+                  msg.sender === "bot" ? "bot-message" : "user-message"
+                }
+              >
+                <strong>{msg.sender === "bot" ? "Bot" : "You"}: </strong>
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: msg.text.replace(/\n/g, "<br/>"),
+                  }}
+                ></span>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+          <Form onSubmit={handleSubmit} className="mt-auto">
+            <Form.Group controlId="chatInput">
+              <Form.Control
+                type="text"
+                placeholder="Type your message or click the mic to speak..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={loading}
+              />
+            </Form.Group>
+            <div className="d-flex justify-content-between mt-2">
+              <Button
+                variant="secondary"
+                onClick={startVoiceInput}
+                disabled={loading}
+              >
+                🎤 Voice Input
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={loading || !input.trim()}
+              >
+                {loading ? "Sending..." : "Send"}
+              </Button>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
     </Container>
   );
-};
-
-export default ChatPage;
+}

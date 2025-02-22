@@ -42,13 +42,17 @@ const DoctorList = ({ refresh }) => {
 
   return (
     <div className="mt-4">
-      <h3>Doctor List</h3>
-      <Table striped bordered hover>
+      <h3 className="text-center mb-4">Doctor List</h3>
+      <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>Name</th>
             <th>Specialization</th>
             <th>Department</th>
+            <th>Timings</th>
+            <th>Consultation Fee</th>
+            <th>Contact</th>
+            <th>Experience</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -58,6 +62,10 @@ const DoctorList = ({ refresh }) => {
               <td>{doctor.name}</td>
               <td>{doctor.specialization}</td>
               <td>{doctor.department?.name || "-"}</td>
+              <td>{doctor.timings}</td>
+              <td>NPR.{doctor.consultationFee}</td>
+              <td>{doctor.contact}</td>
+              <td>{doctor.experience} years</td>
               <td>
                 <Button
                   variant="danger"

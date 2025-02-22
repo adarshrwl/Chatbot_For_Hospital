@@ -7,6 +7,10 @@ const Appointments = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     patientName: "",
+    patientContact: "",
+    patientAge: "",
+    patientGender: "",
+    symptoms: "",
     date: "",
     time: "",
     doctor: "",
@@ -53,16 +57,21 @@ const Appointments = () => {
       const appointmentTime = new Date(`${formData.date}T${formData.time}`);
       const appointmentData = {
         patientName: formData.patientName,
+        patientContact: formData.patientContact,
+        patientAge: formData.patientAge,
+        patientGender: formData.patientGender,
+        symptoms: formData.symptoms,
         doctor: formData.doctor,
         appointmentTime,
         status: formData.status,
       };
 
       if (editMode) {
-        // Update appointment
-        await axios.put(`${API_URL}/appointments/${appointmentId}`, appointmentData);
+        await axios.put(
+          `${API_URL}/appointments/${appointmentId}`,
+          appointmentData
+        );
       } else {
-        // Create new appointment
         await axios.post(`${API_URL}/appointments`, appointmentData);
       }
       fetchAppointments();
@@ -75,10 +84,19 @@ const Appointments = () => {
   };
 
   const handleEdit = (appointment) => {
-    const date = new Date(appointment.appointmentTime).toISOString().split("T")[0];
-    const time = new Date(appointment.appointmentTime).toISOString().split("T")[1].slice(0, 5);
+    const date = new Date(appointment.appointmentTime)
+      .toISOString()
+      .split("T")[0];
+    const time = new Date(appointment.appointmentTime)
+      .toISOString()
+      .split("T")[1]
+      .slice(0, 5);
     setFormData({
       patientName: appointment.patientName,
+      patientContact: appointment.patientContact,
+      patientAge: appointment.patientAge,
+      patientGender: appointment.patientGender,
+      symptoms: appointment.symptoms,
       date,
       time,
       doctor: appointment.doctor._id,
@@ -107,6 +125,10 @@ const Appointments = () => {
   const resetForm = () => {
     setFormData({
       patientName: "",
+      patientContact: "",
+      patientAge: "",
+      patientGender: "",
+      symptoms: "",
       date: "",
       time: "",
       doctor: "",
@@ -128,6 +150,10 @@ const Appointments = () => {
         <thead>
           <tr>
             <th>Patient Name</th>
+            <th>Contact</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Symptoms</th>
             <th>Doctor</th>
             <th>Date</th>
             <th>Time</th>
@@ -139,9 +165,17 @@ const Appointments = () => {
           {appointments.map((appointment) => (
             <tr key={appointment._id}>
               <td>{appointment.patientName}</td>
+              <td>{appointment.patientContact}</td>
+              <td>{appointment.patientAge}</td>
+              <td>{appointment.patientGender}</td>
+              <td>{appointment.symptoms}</td>
               <td>{appointment.doctor.name}</td>
-              <td>{new Date(appointment.appointmentTime).toLocaleDateString()}</td>
-              <td>{new Date(appointment.appointmentTime).toLocaleTimeString()}</td>
+              <td>
+                {new Date(appointment.appointmentTime).toLocaleDateString()}
+              </td>
+              <td>
+                {new Date(appointment.appointmentTime).toLocaleTimeString()}
+              </td>
               <td>{appointment.status}</td>
               <td>
                 <Button
@@ -164,7 +198,6 @@ const Appointments = () => {
         </tbody>
       </Table>
 
-      {/* Modal for Add/Edit Appointment */}
       <Modal show={showModal} onHide={handleModalClose}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -180,6 +213,54 @@ const Appointments = () => {
                 placeholder="Enter patient name"
                 name="patientName"
                 value={formData.patientName}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formPatientContact" className="mb-3">
+              <Form.Label>Patient Contact</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter contact information"
+                name="patientContact"
+                value={formData.patientContact}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formPatientAge" className="mb-3">
+              <Form.Label>Patient Age</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Enter patient age"
+                name="patientAge"
+                value={formData.patientAge}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formPatientGender" className="mb-3">
+              <Form.Label>Patient Gender</Form.Label>
+              <Form.Select
+                name="patientGender"
+                value={formData.patientGender}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId="formSymptoms" className="mb-3">
+              <Form.Label>Symptoms/Reason for Visit</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder="Enter symptoms or reason for visit"
+                name="symptoms"
+                value={formData.symptoms}
                 onChange={handleInputChange}
                 required
               />

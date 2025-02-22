@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../utils/axiosInstance";
-
 import { Form, Button, Card, Toast, ToastContainer } from "react-bootstrap";
 import "./DoctorForm.css";
 
 const DoctorForm = ({ onAdd }) => {
   const [name, setName] = useState("");
   const [specialization, setSpecialization] = useState("");
-  const [departmentId, setDepartmentId] = useState(""); // Renamed to departmentId
+  const [departmentId, setDepartmentId] = useState("");
   const [departments, setDepartments] = useState([]);
+  const [timings, setTimings] = useState(""); // New field
+  const [consultationFee, setConsultationFee] = useState(""); // New field
+  const [contact, setContact] = useState(""); // New field
+  const [experience, setExperience] = useState(""); // New field
   const [toastMessage, setToastMessage] = useState("");
-  const [toastVariant, setToastVariant] = useState(""); // "success" or "danger"
+  const [toastVariant, setToastVariant] = useState("");
   const [showToast, setShowToast] = useState(false);
 
-  // Fetch the list of departments
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_API_URL}/departments`)
@@ -28,8 +30,15 @@ const DoctorForm = ({ onAdd }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const doctorData = { name, specialization, departmentId }; // Updated to use departmentId
-    console.log(doctorData);
+    const doctorData = {
+      name,
+      specialization,
+      departmentId,
+      timings,
+      consultationFee,
+      contact,
+      experience,
+    };
 
     axios
       .post(`${process.env.REACT_APP_API_URL}/doctors`, doctorData)
@@ -37,11 +46,14 @@ const DoctorForm = ({ onAdd }) => {
         setToastVariant("success");
         setToastMessage("Doctor added successfully!");
         setShowToast(true);
-        onAdd(); // Notify parent to refresh the doctor list
-        // Clear form fields
+        onAdd();
         setName("");
         setSpecialization("");
-        setDepartmentId(""); // Clear departmentId
+        setDepartmentId("");
+        setTimings("");
+        setConsultationFee("");
+        setContact("");
+        setExperience("");
       })
       .catch((error) => {
         console.error("Error adding doctor:", error);
@@ -81,8 +93,8 @@ const DoctorForm = ({ onAdd }) => {
           <Form.Group controlId="doctorDepartment" className="mb-3">
             <Form.Label>Department</Form.Label>
             <Form.Select
-              value={departmentId} // Updated to use departmentId
-              onChange={(e) => setDepartmentId(e.target.value)} // Updated to use departmentId
+              value={departmentId}
+              onChange={(e) => setDepartmentId(e.target.value)}
               required
             >
               <option value="">Select Department</option>
@@ -92,6 +104,46 @@ const DoctorForm = ({ onAdd }) => {
                 </option>
               ))}
             </Form.Select>
+          </Form.Group>
+          <Form.Group controlId="doctorTimings" className="mb-3">
+            <Form.Label>Available Timings</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="e.g., 9:00 AM - 5:00 PM"
+              value={timings}
+              onChange={(e) => setTimings(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="consultationFee" className="mb-3">
+            <Form.Label>Consultation Fee</Form.Label>
+            <Form.Control
+              type="number"
+              placeholder="Enter consultation fee"
+              value={consultationFee}
+              onChange={(e) => setConsultationFee(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="contactInfo" className="mb-3">
+            <Form.Label>Contact Information</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter contact number or email"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="experience" className="mb-3">
+            <Form.Label>Experience (Years)</Form.Label>
+            <Form.Control
+              type="number"
+              placeholder="Enter years of experience"
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+              required
+            />
           </Form.Group>
           <Button variant="primary" type="submit" className="w-100">
             Add Doctor

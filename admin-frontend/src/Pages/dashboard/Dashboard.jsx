@@ -85,7 +85,9 @@ const Dashboard = () => {
           <Card className="shadow-sm text-white bg-warning h-100">
             <Card.Body className="text-center">
               <Card.Title>Completed Appointments</Card.Title>
-              <Card.Text className="display-4">{appointmentStats.completed}</Card.Text>
+              <Card.Text className="display-4">
+                {appointmentStats.completed}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
@@ -93,7 +95,9 @@ const Dashboard = () => {
           <Card className="shadow-sm text-white bg-secondary h-100">
             <Card.Body className="text-center">
               <Card.Title>Scheduled Appointments</Card.Title>
-              <Card.Text className="display-4">{appointmentStats.scheduled}</Card.Text>
+              <Card.Text className="display-4">
+                {appointmentStats.scheduled}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
@@ -101,7 +105,9 @@ const Dashboard = () => {
           <Card className="shadow-sm text-white bg-danger h-100">
             <Card.Body className="text-center">
               <Card.Title>Cancelled Appointments</Card.Title>
-              <Card.Text className="display-4">{appointmentStats.cancelled}</Card.Text>
+              <Card.Text className="display-4">
+                {appointmentStats.cancelled}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
