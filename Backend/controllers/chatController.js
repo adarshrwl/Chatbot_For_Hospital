@@ -1,15 +1,20 @@
 const axios = require("axios");
+const Sentiment = require("sentiment");
 const ChatLog = require("../models/Chat");
 const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
 const Department = require("../models/Department");
 
+const sentiment = new Sentiment();
+
 exports.chat = async (req, res) => {
   try {
     const { message, history } = req.body;
-    // history is expected to be an array of objects, e.g. [{ role: "user", text: "..." }, { role: "bot", text: "..." }]
 
-    // Build a conversation context string from the history
+    // Analyze Sentiment
+    const sentimentScore = sentiment.analyze(message).score;
+
+    // Build conversation context
     let conversationContext = "";
     if (history && Array.isArray(history)) {
       conversationContext =
@@ -18,81 +23,137 @@ exports.chat = async (req, res) => {
           .join("\n") + "\n";
     }
 
-    let finalPrompt = conversationContext; // start with the history
+    let promptContext = ""; // This will store all database info
+    let chatbotResponse = "";
 
-    // Check if the user's query relates to doctors
-    if (message.toLowerCase().includes("doctor")) {
-      const doctors = await Doctor.find();
-      const doctorList = doctors
-        .map((doc) => `${doc.name} (${doc.specialization})`)
-        .join(", ");
-      finalPrompt += `You are a hospital chatbot. The available doctors are: ${doctorList}. `;
-      finalPrompt += `Now answer the following question concisely: ${message}`;
+    // 🚨 Handle Urgent Cases 🚨
+    if (sentimentScore < -2) {
+      chatbotResponse =
+        "I'm really sorry to hear that. Would you like me to connect you with a hospital representative for assistance?";
+      return res
+        .status(200)
+        .json({ reply: chatbotResponse, sentiment: sentimentScore });
+    }
 
-      // Check if the query is about appointments
-    } else if (message.toLowerCase().includes("appointment")) {
+    // **Doctor Queries**
+    const doctorQuery = message.match(/dr\.\s*(\w+\s*\w*)/i);
+    if (doctorQuery) {
+      const doctorName = doctorQuery[1].trim();
+      const doctor = await Doctor.findOne({
+        name: { $regex: doctorName, $options: "i" },
+      }).populate("department");
+
+      if (!doctor) {
+        promptContext += `No doctor named ${doctorName} was found in the hospital database.\n`;
+      } else {
+        promptContext += `Here is the information for Dr. ${doctor.name}:
+          - Specialization: ${doctor.specialization}
+          - Timings: ${doctor.timings}
+          - Consultation Fee: Rs. ${doctor.consultationFee}
+          - Contact: ${doctor.contact}
+          - Experience: ${doctor.experience} years
+          - Department: ${doctor.department?.name || "No Department"}\n`;
+      }
+    } else if (message.toLowerCase().includes("doctors")) {
+      const doctors = await Doctor.find().populate("department");
+
+      if (!doctors || doctors.length === 0) {
+        promptContext += "No doctors found in the hospital database.\n";
+      } else {
+        promptContext += "Here are the available doctors:\n";
+        doctors.forEach((doc) => {
+          promptContext += `- Dr. ${doc.name} (${doc.specialization}, ${
+            doc.department?.name || "No Department"
+          })
+            Timings: ${doc.timings}, Consultation Fee: Rs. ${
+            doc.consultationFee
+          }, Contact: ${doc.contact}, Experience: ${doc.experience} years.\n`;
+        });
+      }
+    }
+
+    // **Appointment Queries**
+    else if (message.toLowerCase().includes("appointment")) {
       const appointments = await Appointment.find().populate("doctor");
-      const appointmentList = appointments
-        .map((app) => {
+
+      if (!appointments || appointments.length === 0) {
+        promptContext += "No appointments found for today.\n";
+      } else {
+        promptContext += "Here are today's appointments:\n";
+        appointments.forEach((app) => {
           const doctorName = app.doctor ? app.doctor.name : "Unknown doctor";
           const apptTime = app.appointmentTime
             ? new Date(app.appointmentTime).toLocaleString()
             : "Unknown time";
-          return `${app.patientName} with ${doctorName} on ${apptTime}`;
-        })
-        .join("; ");
-      finalPrompt += `You are a hospital chatbot. Today's appointments are: ${appointmentList}. `;
-      finalPrompt += `Now answer the following question concisely: ${message}`;
-
-      // Check if the query is about departments
-    } else if (message.toLowerCase().includes("department")) {
-      const departments = await Department.find();
-      const departmentList = departments
-        .map((dept) => `${dept.name} (located at ${dept.location || "N/A"})`)
-        .join(", ");
-      finalPrompt += `You are a hospital chatbot. Our departments are: ${departmentList}. `;
-      finalPrompt += `Now answer the following question concisely: ${message}`;
-
-      // Default prompt if none of the keywords are detected
-    } else {
-      finalPrompt += `You are a helpful hospital information chatbot. Answer the following question concisely: ${message}`;
+          promptContext += `- Patient ${app.patientName} with Dr. ${doctorName} on ${apptTime}.\n`;
+        });
+      }
     }
 
-    // Define the Ollama API endpoint
+    // **Department Queries**
+    else if (message.toLowerCase().includes("department")) {
+      const departments = await Department.find();
+
+      if (!departments || departments.length === 0) {
+        promptContext += "No departments found in the hospital.\n";
+      } else {
+        promptContext += "We have the following departments:\n";
+        departments.forEach((dept) => {
+          promptContext += `- ${dept.name} (Located at: ${
+            dept.location || "N/A"
+          }).\n`;
+        });
+      }
+    }
+
+    // **General Queries**
+    else {
+      promptContext += `You are a helpful hospital chatbot. Answer the following question: ${message}\n`;
+    }
+
+    // **Final Prompt for Ollama**
+    const finalPrompt = `
+      You are a hospital chatbot that provides information about doctors, appointments, and departments. 
+      Based on the user's query and the following hospital data, generate an informative and natural response which also should be short .
+      
+      ${promptContext}
+      
+      User's Query: ${message}
+    `;
+
+    // **Ollama API Call**
     const ollamaEndpoint =
       process.env.OLLAMA_API_URL || "http://localhost:11434/v1/completions";
 
-    // Prepare the payload for Ollama
     const payload = {
       prompt: finalPrompt,
       model: "llama3.2:latest",
-      max_tokens: 256,
+      max_tokens: 600,
       temperature: 0.7,
     };
 
-    // Send the request to Ollama
     const response = await axios.post(ollamaEndpoint, payload, {
       headers: { "Content-Type": "application/json" },
     });
+
     console.log("Ollama response:", response.data);
 
-    // Extract the reply
-    const reply =
+    // Extract AI Response
+    chatbotResponse =
       response.data.choices &&
       response.data.choices[0] &&
       response.data.choices[0].text
         ? response.data.choices[0].text.trim()
-        : "No response from model.";
+        : "No response from AI model.";
 
-    // Optionally log the conversation with context
+    // **Log chat conversation**
     const chatLog = new ChatLog({
       query: conversationContext + "User: " + message,
-      reply: reply,
-      // Optionally include user info if available: user: req.user ? req.user._id : null,
+      reply: chatbotResponse,
     });
     await chatLog.save();
 
-    res.status(200).json({ reply });
+    res.status(200).json({ reply: chatbotResponse, sentiment: sentimentScore });
   } catch (error) {
     console.error("Error in chat controller:", error);
     res
